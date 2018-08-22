@@ -1,4 +1,5 @@
 {BufferedProcess} = require 'atom'
+pathlib = require 'path'
 
 module.exports =
   class Runner
@@ -67,8 +68,12 @@ module.exports =
       @process?.kill()
 
     isGitRepo: ->
-      atom.project.getRepositories().some (repo)=>
-        @rootPath?.startsWith(repo.getWorkingDirectory()) if repo
+      return atom.project.getRepositories().some (repo) =>
+        if not repo or not @rootPath
+            return false
+        rootPath = pathlib.normalize(@rootPath)
+        repoPath = pathlib.normalize(repo.getWorkingDirectory())
+        return rootPath.startsWith(repoPath)
 
     detectColumnFlag: ->
       /(ag|pt|ack|rg)$/.test(@commandString.split(/\s/)[0]) and ~@commandString.indexOf('--column')
